@@ -13,6 +13,12 @@
     "--color-text-muted": "#6B7280",
     "--color-text-inverse": "#FFFFFF",
     "--color-focus-ring": "#93C5FD",
+    "--color-danger": "#EF4444",
+    "--color-danger-hover": "#DC2626",
+    "--color-danger-active": "#B91C1C",
+    "--color-icon-on-surface": "#111827",
+    "--color-icon-on-brand": "#FFFFFF",
+    "--color-icon-current": "#111827",
     "--spacing-xs": "4px",
     "--spacing-sm": "8px",
     "--spacing-md": "12px",
@@ -25,11 +31,18 @@
   },
   "components": {
     "button": {
-      "figmaNodeId": "9:2",
+      "figmaNodeId": "27:515",
       "props": {
         "Variant": { "type": "VARIANT", "values": ["Primary", "Secondary", "Ghost"] },
-        "Size":    { "type": "VARIANT", "values": ["MD", "SM", "LG"] },
-        "State":   { "type": "VARIANT", "values": ["Default", "Hover", "Disabled"] }
+        "Size":    { "type": "VARIANT", "values": ["SM", "MD", "LG"] },
+        "State":   { "type": "VARIANT", "values": ["Default", "Hover", "Active", "Loading", "Disabled", "Focus", "Danger"] },
+        "Icon Left":  { "type": "BOOLEAN", "defaultValue": true },
+        "Icon Right": { "type": "BOOLEAN", "defaultValue": false }
+      },
+      "sizeSpecs": {
+        "SM": { "height": 32, "fontSize": 14, "fontWeight": "Bold",   "iconSize": 16, "paddingH": 6,  "paddingV": 12 },
+        "MD": { "height": 40, "fontSize": 16, "fontWeight": "Medium", "iconSize": 24, "paddingH": 8,  "paddingV": 16 },
+        "LG": { "height": 48, "fontSize": 18, "fontWeight": "Medium", "iconSize": 32, "paddingH": 8,  "paddingV": 20 }
       }
     }
   },
@@ -47,11 +60,8 @@
   },
   "componentStates": {
     "collectionId": "VariableCollectionId:18:2",
-    "modes": {
-      "on-surface": "18:0",
-      "on-brand": "18:1"
-    },
+    "modes": { "Regular": "18:0", "Inverted": "18:1" },
     "iconCurrentVarId": "VariableID:18:3"
   },
-  "extractedAt": 1780071594581
+  "extractedAt": 1780078424977
 }

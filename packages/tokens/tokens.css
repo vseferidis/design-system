@@ -7,6 +7,15 @@
   --color-secondary-hover: #4B5563;
   --color-secondary-active: #374151;
 
+  /* Color - Danger */
+  --color-danger: #EF4444;
+  --color-danger-hover: #DC2626;
+  --color-danger-active: #B91C1C;
+
+  /* Color - Icon */
+  --color-icon-on-surface: #111827;
+  --color-icon-on-brand: #FFFFFF;
+
   /* Color - Semantic */
   --color-surface: #FFFFFF;
   --color-surface-subtle: #F9FAFB;

@@ -21,12 +21,15 @@ export function parseTypesTS(filePath) {
   const result = { variants: {}, attributes: {}, slots: [] };
 
   // Extract union type aliases: export type UIButtonVariant = 'a' | 'b'
-  const typeRe = /export type \w+(\w+)\s*=\s*([^;]+);/g;
+  // m[1] = full type name (UIButtonVariant), m[2] = value string ('a' | 'b')
+  const typeRe = /export type (\w+)\s*=\s*([^;]+);/g;
   let m;
   while ((m = typeRe.exec(content)) !== null) {
-    const name = m[1].toLowerCase();
     const values = m[2].match(/'([^']+)'/g)?.map(v => v.replace(/'/g, '')) ?? [];
-    if (values.length) result.variants[name] = values;
+    if (!values.length) continue;
+    // Strip UIButton / UI prefix and lowercase → 'UIButtonVariant' → 'variant'
+    const name = m[1].replace(/^UIButton/i, '').replace(/^UI/i, '').toLowerCase();
+    if (name) result.variants[name] = values;
   }
 
   // Extract interface attributes
@@ -76,10 +79,14 @@ export function diffTokens(figmaTokens, codeTokens) {
 }
 
 // Diff component props: figmaProps vs codeProps
+// Values are compared case-insensitively — Figma uses TitleCase, code uses lowercase
 export function diffComponentProps(figmaProps, codeTypes) {
   const diffs = [];
 
   for (const [propName, def] of Object.entries(figmaProps)) {
+    // BOOLEAN props (Icon Left / Icon Right) are tracked separately — skip variant diffing
+    if (def.type === 'BOOLEAN') continue;
+
     const normalName = propName.toLowerCase().replace(/[^a-z0-9]/g, '');
     const codeVariants = codeTypes.variants[normalName];
 
@@ -88,7 +95,7 @@ export function diffComponentProps(figmaProps, codeTypes) {
         id: `prop-${propName}`,
         type: 'variant',
         property: propName,
-        figmaValue: def.values,
+        figmaValue: def.values ?? [],
         codeValue: null,
         change: 'figma-only',
         figmaType: def.type,
@@ -96,23 +103,27 @@ export function diffComponentProps(figmaProps, codeTypes) {
       continue;
     }
 
-    const figmaSet = new Set(def.values);
-    const codeSet = new Set(codeVariants);
-    const added = [...figmaSet].filter(v => !codeSet.has(v));
-    const removed = [...codeSet].filter(v => !figmaSet.has(v));
+    // Normalize both sides to lowercase before comparing so 'Primary' === 'primary'
+    const figmaLower = (def.values ?? []).map(v => v.toLowerCase());
+    const codeLower  = codeVariants.map(v => v.toLowerCase());
+    const figmaSet   = new Set(figmaLower);
+    const codeSet    = new Set(codeLower);
+    const added      = figmaLower.filter(v => !codeSet.has(v));
+    const removed    = codeLower.filter(v => !figmaSet.has(v));
 
     if (added.length || removed.length) {
       diffs.push({
         id: `prop-${propName}`,
         type: 'variant',
         property: propName,
-        figmaValue: def.values,
+        figmaValue: def.values ?? [],     // keep original Figma casing for display
         codeValue: codeVariants,
         change: 'modified',
         added,
         removed,
       });
     }
+    // No diff if sets match — intentional lowercase/titlecase difference is fine
   }
 
   return diffs;

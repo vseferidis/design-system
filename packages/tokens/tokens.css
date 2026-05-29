@@ -54,4 +54,5 @@
 
   /* Transition */
   --transition-fast: 120ms ease;
+  --color-icon-current: #111827;
 }

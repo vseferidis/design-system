@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ui-button preview</title>
+  <link rel="stylesheet" href="/packages/tokens/tokens.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: white;
+      padding: 16px;
+      font-family: var(--font-family);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .label {
+      font-size: 11px;
+      color: #6B7280;
+      width: 80px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <span class="label">Variants</span>
+    <ui-button variant="primary">Primary</ui-button>
+    <ui-button variant="secondary">Secondary</ui-button>
+    <ui-button variant="ghost">Ghost</ui-button>
+  </div>
+  <div class="row">
+    <span class="label">Sizes</span>
+    <ui-button size="sm">Small</ui-button>
+    <ui-button size="md">Medium</ui-button>
+    <ui-button size="lg">Large</ui-button>
+  </div>
+  <div class="row">
+    <span class="label">States</span>
+    <ui-button disabled>Disabled</ui-button>
+    <ui-button loading>Loading</ui-button>
+  </div>
+
+  <script type="module">
+    // In preview, load from CDN so the HTML page is self-contained
+    import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
+
+    const { property, customElement } = await import('https://cdn.jsdelivr.net/npm/lit@3/decorators.js').catch(() => {
+      // Fallback: define manually without decorators
+      return { property: null, customElement: null };
+    });
+
+    // Simple vanilla Web Component fallback for preview (no decorator transpilation needed)
+    class UIButton extends LitElement {
+      static get properties() {
+        return {
+          variant: { type: String, reflect: true },
+          size: { type: String, reflect: true },
+          disabled: { type: Boolean, reflect: true },
+          loading: { type: Boolean, reflect: true },
+        };
+      }
+
+      constructor() {
+        super();
+        this.variant = 'primary';
+        this.size = 'md';
+        this.disabled = false;
+        this.loading = false;
+      }
+
+      static get styles() {
+        return css`
+          :host { display: inline-block; font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif); }
+          button { display: inline-flex; align-items: center; gap: var(--spacing-sm, 8px); border: 1px solid transparent; cursor: pointer; font-weight: var(--font-weight-medium, 500); transition: background 120ms ease, border-color 120ms ease, color 120ms ease; white-space: nowrap; user-select: none; }
+          button:focus-visible { outline: 2px solid var(--color-focus-ring, #93C5FD); outline-offset: 2px; }
+          :host([size='sm']) button { padding: 4px 8px; font-size: 13px; border-radius: 4px; }
+          :host([size='md']) button { padding: 8px 12px; font-size: 14px; border-radius: 6px; }
+          :host([size='lg']) button { padding: 12px 16px; font-size: 16px; border-radius: 8px; }
+          :host([variant='primary']) button { background: var(--color-primary, #3B82F6); color: var(--color-text-inverse, #fff); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+          :host([variant='primary']) button:hover:not(:disabled) { background: var(--color-primary-hover, #2563EB); }
+          :host([variant='secondary']) button { background: var(--color-surface, #fff); color: var(--color-text, #111827); border-color: var(--color-border, #E5E7EB); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+          :host([variant='secondary']) button:hover:not(:disabled) { background: var(--color-surface-subtle, #F9FAFB); }
+          :host([variant='ghost']) button { background: transparent; color: var(--color-text, #111827); }
+          :host([variant='ghost']) button:hover:not(:disabled) { background: var(--color-surface-subtle, #F9FAFB); }
+          button:disabled { opacity: 0.4; cursor: not-allowed; }
+          .spinner { display: none; width: 1em; height: 1em; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+          :host([loading]) .spinner { display: inline-block; }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `;
+      }
+
+      render() {
+        return html`
+          <button ?disabled=${this.disabled || this.loading} aria-busy=${this.loading} part="button">
+            ${this.loading ? html`<span class="spinner" aria-hidden="true"></span>` : ''}
+            <slot name="icon-left"></slot>
+            <slot></slot>
+            <slot name="icon-right"></slot>
+          </button>
+        `;
+      }
+    }
+
+    customElements.define('ui-button', UIButton);
+  </script>
+</body>
+</html>

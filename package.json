@@ -1,0 +1,16 @@
+{
+  "name": "design-system",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "packages/components/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "sync": "node apps/sync/server.js",
+    "build:button": "tsc -p packages/components/button/tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

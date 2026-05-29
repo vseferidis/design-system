@@ -1,0 +1,12 @@
+{
+  "figmaFileKey": "",
+  "components": {
+    "button": {
+      "tag": "ui-button",
+      "file": "packages/components/button/src/ui-button.ts",
+      "typesFile": "packages/components/button/src/types.ts",
+      "previewFile": "packages/components/button/preview.html",
+      "figmaNodeId": ""
+    }
+  }
+}

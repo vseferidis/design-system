@@ -1,0 +1,37 @@
+{
+  "tokens": {
+    "--color-primary": "#3B82F6",
+    "--color-primary-hover": "#2563EB",
+    "--color-primary-active": "#1D4ED8",
+    "--color-secondary": "#6B7280",
+    "--color-secondary-hover": "#4B5563",
+    "--color-secondary-active": "#374151",
+    "--color-surface": "#FFFFFF",
+    "--color-surface-subtle": "#F9FAFB",
+    "--color-border": "#E5E7EB",
+    "--color-text": "#111827",
+    "--color-text-muted": "#6B7280",
+    "--color-text-inverse": "#FFFFFF",
+    "--color-focus-ring": "#93C5FD",
+    "--spacing-xs": "4px",
+    "--spacing-sm": "8px",
+    "--spacing-md": "12px",
+    "--spacing-lg": "16px",
+    "--spacing-xl": "24px",
+    "--radius-sm": "4px",
+    "--radius-md": "6px",
+    "--radius-lg": "8px",
+    "--radius-full": "9999px"
+  },
+  "components": {
+    "button": {
+      "figmaNodeId": "9:2",
+      "props": {
+        "Variant": { "type": "VARIANT", "values": ["Primary", "Secondary", "Ghost"] },
+        "Size":    { "type": "VARIANT", "values": ["MD", "SM", "LG"] },
+        "State":   { "type": "VARIANT", "values": ["Default", "Hover", "Disabled"] }
+      }
+    }
+  },
+  "extractedAt": 1780071594581
+}

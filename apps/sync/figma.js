@@ -52,35 +52,63 @@ export function figmaColorToHex(color) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
 }
 
-// Extract tokens from Figma local styles in a file
+// Extract tokens from Figma local variables (modern Variables API)
+// Maps WEB code syntax `var(--foo)` → resolved hex value
 export async function extractFigmaTokens(token, fileKey) {
-  const stylesData = await getFileStyles(token, fileKey);
-  const styleIds = stylesData.meta?.styles?.map(s => s.node_id) ?? [];
-  if (!styleIds.length) return {};
+  const data = await getLocalVariables(token, fileKey);
+  const variables = data.meta?.variables ?? {};
+  const collections = data.meta?.variableCollections ?? {};
 
-  const nodesData = await getNodes(token, fileKey, styleIds);
+  // Build a flat map: variableId → resolved value (follow VARIABLE_ALIAS chains)
+  const resolvedCache = {};
+  function resolveValue(varId, modeId) {
+    const key = `${varId}@${modeId}`;
+    if (resolvedCache[key] !== undefined) return resolvedCache[key];
+
+    const variable = variables[varId];
+    if (!variable) return null;
+
+    // Find the right mode value — fall back to first available mode
+    const coll = collections[variable.variableCollectionId];
+    const mode = coll?.modes?.find(m => m.modeId === modeId) ?? coll?.modes?.[0];
+    if (!mode) return null;
+
+    const val = variable.valuesByMode?.[mode.modeId];
+    if (!val) return null;
+
+    if (val.type === 'VARIABLE_ALIAS') {
+      // Recursively resolve — use target var's own collection's default mode
+      const targetVar = variables[val.id];
+      if (!targetVar) return null;
+      const targetColl = collections[targetVar.variableCollectionId];
+      const targetModeId = targetColl?.defaultModeId ?? targetColl?.modes?.[0]?.modeId;
+      const resolved = resolveValue(val.id, targetModeId);
+      resolvedCache[key] = resolved;
+      return resolved;
+    }
+
+    resolvedCache[key] = val;
+    return val;
+  }
+
   const tokens = {};
 
-  for (const style of stylesData.meta.styles) {
-    const node = nodesData.nodes?.[style.node_id]?.document;
-    if (!node) continue;
+  for (const [varId, variable] of Object.entries(variables)) {
+    // Only include variables that have a WEB code syntax starting with `var(`
+    const webSyntax = variable.codeSyntax?.WEB;
+    if (!webSyntax || !webSyntax.startsWith('var(')) continue;
 
-    const name = style.name; // e.g. "Color/Primary"
-    const cssName = styleToCssVar(name, style.style_type);
+    const cssVar = webSyntax.slice(4, -1); // strip `var(` and `)`
 
-    if (style.style_type === 'FILL' && node.fills?.[0]?.type === 'SOLID') {
-      tokens[cssName] = figmaColorToHex(node.fills[0].color);
-    } else if (style.style_type === 'TEXT') {
-      if (node.style?.fontSize) tokens[`--font-size-${slugify(name)}`] = `${node.style.fontSize}px`;
-      if (node.style?.fontWeight) tokens[`--font-weight-${slugify(name)}`] = String(node.style.fontWeight);
-    } else if (style.style_type === 'EFFECT') {
-      // shadow effects
-      const shadow = node.effects?.find(e => e.type === 'DROP_SHADOW');
-      if (shadow) {
-        const { offset, radius, color } = shadow;
-        const c = figmaColorToHex(color);
-        tokens[`--shadow-${slugify(name)}`] = `${offset.x}px ${offset.y}px ${radius}px ${c}`;
-      }
+    const coll = collections[variable.variableCollectionId];
+    const modeId = coll?.defaultModeId ?? coll?.modes?.[0]?.modeId;
+    const resolved = resolveValue(varId, modeId);
+    if (!resolved) continue;
+
+    if (variable.resolvedType === 'COLOR') {
+      tokens[cssVar] = figmaColorToHex(resolved);
+    } else if (variable.resolvedType === 'FLOAT') {
+      tokens[cssVar] = `${resolved}px`;
     }
   }
 

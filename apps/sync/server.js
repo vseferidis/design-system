@@ -208,6 +208,29 @@ app.get('/api/preview/:component', (req, res) => {
   res.json({ url: previewUrl });
 });
 
+// GET /api/icon-map — Phosphor Figma name → ph-* tag mapping
+// e.g. "Icon=Clock, Size=16" → "clock", "ArrowRight" → "arrow-right"
+function phosphorNameToTag(figmaName) {
+  // Strip "Icon=" prefix and size suffix if present (our wrapper naming)
+  let name = figmaName.replace(/^Icon=/, '').replace(/,\s*Size=\d+$/, '').trim();
+  // Strip Figma variant suffix like ", Weight=Regular, Format=Stroke"
+  name = name.replace(/,.*$/, '').trim();
+  // CamelCase → kebab-case
+  return name.replace(/([A-Z])/g, (m, l, i) => (i > 0 ? '-' : '') + l.toLowerCase())
+             .replace(/^-/, '');
+}
+
+app.get('/api/icon-map', (req, res) => {
+  const state = loadFigmaState();
+  const icons = state.icons ?? {};
+  res.json({ icons, phosphorNameToTag: 'use /api/icon-map/resolve?name=X' });
+});
+
+app.get('/api/icon-map/resolve', (req, res) => {
+  const name = req.query.name ?? '';
+  res.json({ input: name, tag: `ph-${phosphorNameToTag(name)}` });
+});
+
 function buildPRBody(component, diffs) {
   const tokenLines = diffs
     .filter(d => d.type === 'token')

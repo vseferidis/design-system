@@ -271,4 +271,72 @@ function toast(msg, type = '') {
   toastTimeout = setTimeout(() => { el.className = `toast ${type}`; }, 5000);
 }
 
+// ---- Rebind icons modal ----
+const REBIND_SCRIPT = `
+// DS Icon Rebind — run this in Figma Plugin API (Plugins > Development > Console)
+// Finds every Phosphor icon instance across all pages and rebinds its stroke/fill
+// from Phosphor's remote variable to the DS color/icon/current variable.
+
+const PHOSPHOR_VAR_ID = 'VariableID:e18a3822f9ee297f896af84384cefdd5a2c0f1b2/729:97';
+const DS_ICON_VAR_ID  = 'VariableID:18:3'; // color/icon/current
+
+async function run() {
+  const dsVar = await figma.variables.getVariableByIdAsync(DS_ICON_VAR_ID);
+  if (!dsVar) { console.error('DS icon variable not found'); return; }
+
+  let total = 0;
+
+  for (const page of figma.root.children) {
+    await figma.setCurrentPageAsync(page);
+
+    const instances = page.findAllWithCriteria({ types: ['INSTANCE'] });
+    for (const inst of instances) {
+      if (!inst.mainComponent?.remote) continue; // skip non-library instances
+
+      function rebind(node) {
+        // Rebind strokes
+        if ('strokes' in node && node.strokes?.length) {
+          const bv = node.boundVariables;
+          if (bv?.strokes?.some(b => b?.id === PHOSPHOR_VAR_ID)) {
+            node.strokes = node.strokes.map(s =>
+              s.type === 'SOLID'
+                ? figma.variables.setBoundVariableForPaint(s, 'color', dsVar)
+                : s
+            );
+            total++;
+          }
+        }
+        // Rebind fills (for Fill-weight icons)
+        if ('fills' in node && node.fills?.length) {
+          const bv = node.boundVariables;
+          if (bv?.fills?.some(b => b?.id === PHOSPHOR_VAR_ID)) {
+            node.fills = node.fills.map(f =>
+              f.type === 'SOLID'
+                ? figma.variables.setBoundVariableForPaint(f, 'color', dsVar)
+                : f
+            );
+            total++;
+          }
+        }
+        if ('children' in node) node.children.forEach(rebind);
+      }
+
+      rebind(inst);
+    }
+  }
+
+  return 'Rebound ' + total + ' vector(s) across all pages.';
+}
+return run();
+`.trim();
+
+function showRebindScript() {
+  document.getElementById('rebind-code').textContent = REBIND_SCRIPT;
+  document.getElementById('rebind-modal').style.display = 'flex';
+}
+
+function copyRebindScript() {
+  navigator.clipboard.writeText(REBIND_SCRIPT).then(() => toast('Script copied to clipboard', 'success'));
+}
+
 init();

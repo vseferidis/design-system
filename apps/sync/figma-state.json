@@ -33,5 +33,25 @@
       }
     }
   },
+  "icons": {
+    "wrappers": {
+      "clock": {
+        "figmaCompId": "16:5",
+        "figmaCompKey": "866887850b3c781210a9ea6d8dc4ef30177ac3f9",
+        "phosphorName": "Clock",
+        "tag": "ph-clock"
+      }
+    },
+    "phosphorVarId": "VariableID:e18a3822f9ee297f896af84384cefdd5a2c0f1b2/729:97",
+    "dsIconVarId": "VariableID:18:3"
+  },
+  "componentStates": {
+    "collectionId": "VariableCollectionId:18:2",
+    "modes": {
+      "on-surface": "18:0",
+      "on-brand": "18:1"
+    },
+    "iconCurrentVarId": "VariableID:18:3"
+  },
   "extractedAt": 1780071594581
 }

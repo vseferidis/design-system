@@ -118,6 +118,39 @@ export function diffComponentProps(figmaProps, codeTypes) {
   return diffs;
 }
 
+// Diff icon usage: figmaIcons (array of { iconName, tag, usedIn }) vs code attributes
+export function diffIconUsage(figmaIcons = [], codeAttributes = {}) {
+  const diffs = [];
+  for (const { iconName, tag, usedIn } of figmaIcons) {
+    const attrName = usedIn === 'left' ? 'icon-left' : 'icon-right';
+    const codeVal = codeAttributes[attrName];
+    if (!codeVal) {
+      diffs.push({
+        id: `icon-${attrName}-${tag}`,
+        type: 'icon',
+        property: attrName,
+        figmaValue: tag,
+        codeValue: null,
+        change: 'figma-only',
+        iconName,
+        usedIn,
+      });
+    } else if (codeVal !== tag && codeVal !== iconName) {
+      diffs.push({
+        id: `icon-${attrName}-${tag}`,
+        type: 'icon',
+        property: attrName,
+        figmaValue: tag,
+        codeValue: codeVal,
+        change: 'modified',
+        iconName,
+        usedIn,
+      });
+    }
+  }
+  return diffs;
+}
+
 // Normalize color values for comparison (handles hex case, spacing)
 function normalizeColor(val) {
   return val.trim().toLowerCase().replace(/\s+/g, ' ');

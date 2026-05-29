@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ui-button preview</title>
   <link rel="stylesheet" href="/packages/tokens/tokens.css">
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js" type="module"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -46,6 +47,13 @@
     <span class="label">States</span>
     <ui-button disabled>Disabled</ui-button>
     <ui-button loading>Loading</ui-button>
+  </div>
+  <div class="row">
+    <span class="label">Icons</span>
+    <ui-button icon-left="arrow-right">Continue</ui-button>
+    <ui-button icon-right="arrow-right">Continue</ui-button>
+    <ui-button variant="secondary" icon-left="clock">Schedule</ui-button>
+    <ui-button variant="ghost" icon-left="magnifying-glass">Search</ui-button>
   </div>
 
   <script type="module">

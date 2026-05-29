@@ -20,4 +20,6 @@ export interface UIButtonAttributes {
   size: UIButtonSize;
   disabled: boolean;
   loading: boolean;
+  'icon-left'?: string;
+  'icon-right'?: string;
 }

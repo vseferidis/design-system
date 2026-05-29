@@ -1,4 +1,4 @@
-import { LitElement, html, css, unsafeCSS } from 'lit';
+import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { UIButtonVariant, UIButtonSize } from './types.js';
 
@@ -8,6 +8,8 @@ export class UIButton extends LitElement {
   @property({ type: String, reflect: true }) size: UIButtonSize = 'md';
   @property({ type: Boolean, reflect: true }) disabled = false;
   @property({ type: Boolean, reflect: true }) loading = false;
+  @property({ type: String, attribute: 'icon-left',  reflect: true }) iconLeft?: string;
+  @property({ type: String, attribute: 'icon-right', reflect: true }) iconRight?: string;
 
   static styles = css`
     :host {
@@ -121,7 +123,25 @@ export class UIButton extends LitElement {
       display: inline-flex;
       align-items: center;
     }
+
+    /* Phosphor icon sizing — matches size tokens */
+    :host([size='sm']) .ph-icon { font-size: 14px; width: 14px; height: 14px; }
+    :host([size='md']) .ph-icon { font-size: 16px; width: 16px; height: 16px; }
+    :host([size='lg']) .ph-icon { font-size: 20px; width: 20px; height: 20px; }
+
+    .ph-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
   `;
+
+  private _renderIcon(name: string) {
+    // name is a ph-* tag like 'arrow-right' or a full 'ph-arrow-right'
+    const tag = name.startsWith('ph-') ? name : `ph-${name}`;
+    return html`<span class="ph-icon">${document.createElement(tag)}</span>`;
+  }
 
   render() {
     return html`
@@ -130,10 +150,11 @@ export class UIButton extends LitElement {
         aria-busy=${this.loading}
         part="button"
       >
-        ${this.loading ? html`<span class="spinner" aria-hidden="true"></span>` : ''}
-        <slot name="icon-left"></slot>
+        ${this.loading
+          ? html`<span class="spinner" aria-hidden="true"></span>`
+          : this.iconLeft ? this._renderIcon(this.iconLeft) : html`<slot name="icon-left"></slot>`}
         <slot></slot>
-        <slot name="icon-right"></slot>
+        ${this.iconRight ? this._renderIcon(this.iconRight) : html`<slot name="icon-right"></slot>`}
       </button>
     `;
   }

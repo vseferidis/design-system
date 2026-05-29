@@ -179,22 +179,31 @@ export function applyTokenDiffs(currentCSS, approvedDiffs) {
   return content;
 }
 
-// Generate updated types.ts content from approved variant diffs
+// Generate updated types.ts content from approved variant diffs.
+// Values are lowercased to match CSS attribute conventions (e.g. 'primary' not 'Primary').
 export function applyVariantDiffs(currentTS, approvedDiffs) {
   let content = currentTS;
 
   for (const diff of approvedDiffs) {
     if (diff.type !== 'variant') continue;
-    const values = diff.figmaValue.map(v => `'${v}'`).join(' | ');
+
+    // Always lowercase values to match CSS/HTML attribute conventions
+    const values = diff.figmaValue.map(v => `'${v.toLowerCase()}'`).join(' | ');
     const typeName = `UIButton${capitalize(diff.property)}`;
 
-    if (diff.change === 'figma-only') {
-      // Append new type before the slots interface
+    // Case-insensitive search for existing type declaration
+    const existingRe = new RegExp(
+      `(export type ${typeName}\\s*=\\s*)[^\n]+`,
+      'i'
+    );
+
+    if (existingRe.test(content)) {
+      // Replace existing declaration (handles both 'figma-only' and 'modified')
+      content = content.replace(existingRe, `$1${values};`);
+    } else {
+      // Truly new type — insert before the slots interface
       const newType = `export type ${typeName} = ${values};\n`;
       content = content.replace(/(export interface UIButtonSlots)/, `${newType}\n$1`);
-    } else if (diff.change === 'modified') {
-      const re = new RegExp(`(export type ${typeName}\\s*=\\s*)[^\n]+`);
-      content = content.replace(re, `$1${values};`);
     }
   }
 

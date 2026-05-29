@@ -2,7 +2,7 @@
 
 export type UIButtonVariant = 'primary' | 'secondary' | 'ghost';
 export type UIButtonSize = 'sm' | 'md' | 'lg';
-export type UIButtonState = 'default' | 'hover' | 'disabled';
+export type UIButtonState = 'default' | 'hover' | 'active' | 'loading' | 'disabled' | 'focus' | 'danger';
 
 export interface UIButtonSlots {
   default: true;
